@@ -14,7 +14,7 @@ PDFAsk is a Streamlit application that allows users to upload PDF files, extract
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/pdfask.git
+   git clone https://github.com/rufevean/pdfask.git
    cd pdfask
 2. Create a virtual environment and activate it:
     ```
