@@ -1,4 +1,5 @@
 import streamlit as st
+import PyPDF2
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import os
@@ -10,6 +11,8 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 import speech_recognition as sr
+from gtts import gTTS
+import base64
 
 load_dotenv()
 
@@ -53,7 +56,15 @@ def user_input(user_question):
     docs = new_db.similarity_search(user_question)
     chain = get_conversational_chain()
     response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
-    st.write("Reply: ", response["output_text"])
+    response_text = response["output_text"]
+    st.write("Reply: ", response_text)
+    tts = gTTS(response_text)
+    tts.save("response.mp3")
+    with open("response.mp3", "rb") as audio_file:
+        audio_bytes = audio_file.read()
+        b64_audio = base64.b64encode(audio_bytes).decode()
+        audio_html = f'<audio controls><source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3"></audio>'
+        st.markdown(audio_html, unsafe_allow_html=True)
 
 def recognize_speech():
     recognizer = sr.Recognizer()
@@ -125,10 +136,7 @@ def main():
                 st.warning("Please upload PDF files before processing.")
 
     if st.session_state.data_processed:
-        # Styled text input with speech recognition button
         user_question = st.text_input("Ask your question here:", key="question_input")
-
-        # Button to trigger speech recognition
         if st.button("🎤 Speak"):
             recognized_text = recognize_speech()
             if recognized_text:
